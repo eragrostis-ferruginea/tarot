@@ -34,6 +34,12 @@ function cleanMarkdown(text: string): string {
   
   cleaned = cleaned.replace(/——/g, '——')
   
+  cleaned = cleaned.replace(/([^\*\s])\*([^\*\s])/g, '$1$2')
+  
+  cleaned = cleaned.replace(/([^\*\s])\*$/gm, '$1')
+  
+  cleaned = cleaned.replace(/^\*([^\*\s])/gm, '$1')
+  
   return cleaned.trim()
 }
 
