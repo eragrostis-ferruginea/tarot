@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Sparkles, AlertCircle } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useSearchParams, useNavigate } from 'react-router-dom'
+import ReactMarkdown from 'react-markdown'
 import { useTarotStore } from '@/stores/tarotStore'
 import { useApiConfigStore } from '@/stores/apiConfigStore'
 import { streamAIReading } from '@/services/aiService'
@@ -12,6 +13,28 @@ const suitLabels: Record<string, string> = {
   cups: '圣杯',
   swords: '宝剑',
   pentacles: '星币',
+}
+
+function cleanMarkdown(text: string): string {
+  let cleaned = text
+  
+  cleaned = cleaned.replace(/\*\*\*+/g, '**')
+  
+  cleaned = cleaned.replace(/(\*\*){2,}/g, '**')
+  
+  cleaned = cleaned.replace(/^\s*\*\s*/gm, '\n- ')
+  
+  cleaned = cleaned.replace(/^\s*\d+\.\s*/gm, (match) => {
+    const numMatch = match.match(/(\d+)/)
+    if (numMatch) {
+      return `\n${numMatch[1]}. `
+    }
+    return match
+  })
+  
+  cleaned = cleaned.replace(/——/g, '——')
+  
+  return cleaned.trim()
 }
 
 export default function Reading() {
@@ -216,8 +239,28 @@ export default function Reading() {
             </div>
           )}
 
-          <div className="text-mystic-200 font-cormorant text-lg leading-relaxed whitespace-pre-wrap">
-            {interpretation}
+          <div className="text-mystic-200 font-cormorant text-lg leading-relaxed">
+            <ReactMarkdown
+              components={{
+                h1: ({ children }) => <h1 className="font-cinzel text-2xl text-gold-400 mt-6 mb-4">{children}</h1>,
+                h2: ({ children }) => <h2 className="font-cinzel text-xl text-gold-400 mt-5 mb-3">{children}</h2>,
+                h3: ({ children }) => <h3 className="font-cinzel text-lg text-gold-400 mt-4 mb-2">{children}</h3>,
+                h4: ({ children }) => <h4 className="font-cinzel text-base text-gold-400 mt-3 mb-2">{children}</h4>,
+                p: ({ children }) => <p className="mb-4 leading-relaxed">{children}</p>,
+                strong: ({ children }) => <strong className="text-gold-300 font-semibold">{children}</strong>,
+                em: ({ children }) => <em className="italic text-mystic-300">{children}</em>,
+                ul: ({ children }) => <ul className="list-disc list-inside mb-4 space-y-1">{children}</ul>,
+                ol: ({ children }) => <ol className="list-decimal list-inside mb-4 space-y-1">{children}</ol>,
+                li: ({ children }) => <li className="text-mystic-200">{children}</li>,
+                blockquote: ({ children }) => <blockquote className="border-l-2 border-gold-500/50 pl-4 my-4 text-mystic-300 italic">{children}</blockquote>,
+                code: ({ children }) => <code className="bg-mystic-800/60 text-gold-300 px-1.5 py-0.5 rounded text-sm font-mono">{children}</code>,
+                pre: ({ children }) => <pre className="bg-mystic-800/60 p-4 rounded-lg overflow-x-auto mb-4 font-mono text-sm">{children}</pre>,
+                a: ({ href, children }) => <a href={href} className="text-mystic-400 hover:text-gold-300 underline transition-colors" target="_blank" rel="noopener noreferrer">{children}</a>,
+                hr: () => <hr className="border-mystic-700/50 my-6" />,
+              }}
+            >
+              {cleanMarkdown(interpretation)}
+            </ReactMarkdown>
             {isStreaming && <span className="inline-block w-0.5 h-5 bg-gold-400 animate-pulse ml-1" />}
           </div>
 
